@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rm -rf dist/ && npx tsup src --format cjs,esm --dts --clean",
+    "compile": "rm -rf dist/ && npx tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.0.4"
+    "typescript": "^4.9.5"
   }
 }

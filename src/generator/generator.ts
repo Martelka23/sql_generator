@@ -110,11 +110,11 @@ class SqlGenerator {
             rangeValues = [args.from, args.to];
         } else if (args.from && !args.to) {
             rangeString = `$${lastIndex} < ${args.column}`;
-            lastIndex++;
+            lastIndex += 1;
             rangeValues = [args.from];
         } else if (!args.from && args.to) {
-            rangeString = `${args.column} < $${lastIndex + 1}`;
-            lastIndex += 2;
+            rangeString = `${args.column} < $${lastIndex}`;
+            lastIndex += 1;
             rangeValues = [args.to];
         }
 

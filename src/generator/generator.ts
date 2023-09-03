@@ -3,9 +3,11 @@ import {
     GetConditionStringResult, 
     GetInsertStringResult, 
     GetLimitOffsetStringResult, 
+    GetRangeStringResult, 
     GetSetStringResult, 
     LimitOffsetArgs, 
-    ObjectToStringResult
+    ObjectToStringResult,
+    RangeArgs
 } from "src/@types/types";
 
 class SqlGenerator {
@@ -95,6 +97,28 @@ class SqlGenerator {
         }
 
         return { limitOffsetString, lastIndex, limitOffsetValues };
+    }
+
+    getRangeString(args: RangeArgs, start: number = 1): GetRangeStringResult {
+        let rangeString = '';
+        let lastIndex = start;
+        let rangeValues: Array<number | string> = [];
+
+        if (args.from && args.to) {
+            rangeString = `$${lastIndex} < ${args.column} < $${lastIndex + 1}`;
+            lastIndex += 2;
+            rangeValues = [args.from, args.to];
+        } else if (args.from && !args.to) {
+            rangeString = `$${lastIndex} < ${args.column}`;
+            lastIndex++;
+            rangeValues = [args.from];
+        } else if (!args.from && args.to) {
+            rangeString = `${args.column} < $${lastIndex + 1}`;
+            lastIndex += 2;
+            rangeValues = [args.to];
+        }
+
+        return { rangeString, lastIndex, rangeValues };
     }
 }
 

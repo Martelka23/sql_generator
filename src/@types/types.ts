@@ -33,4 +33,16 @@ export interface GetLimitOffsetStringResult {
     limitOffsetValues: number[];
 }
 
+export interface RangeArgs {
+    from: number | string;
+    to: number | string;
+    column: string;
+}
+
+export interface GetRangeStringResult {
+    rangeString: string;
+    lastIndex: number;
+    rangeValues: Array<number | string>;
+}
+
 export type DefaultObject = Record<string, any>;

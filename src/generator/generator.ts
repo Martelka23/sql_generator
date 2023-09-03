@@ -2,7 +2,9 @@ import {
     DefaultObject, 
     GetConditionStringResult, 
     GetInsertStringResult, 
+    GetLimitOffsetStringResult, 
     GetSetStringResult, 
+    LimitOffsetArgs, 
     ObjectToStringResult
 } from "src/@types/types";
 
@@ -72,6 +74,27 @@ class SqlGenerator {
         const lastIndex = start + keys.length;
 
         return { insertString, lastIndex, insertValues: values };
+    }
+
+    getLimitOffsetString(args: LimitOffsetArgs, start: number = 1): GetLimitOffsetStringResult {
+        let limitOffsetString = '';
+        let lastIndex = start;
+        let limitOffsetValues: number[] = [];
+
+
+        if (args.limit) {
+            limitOffsetString += `LIMIT ${args.limit}`;
+            lastIndex++;
+            limitOffsetValues.push(args.limit);
+        }
+
+        if (args.offset) {
+            limitOffsetString += ` OFFSET ${args.offset}`;
+            lastIndex++;
+            limitOffsetValues.push(args.offset);
+        }
+
+        return { limitOffsetString, lastIndex, limitOffsetValues };
     }
 }
 

@@ -22,4 +22,15 @@ export interface GetInsertStringResult {
     insertValues: any[];
 }
 
+export interface LimitOffsetArgs {
+    limit?: number;
+    offset?: number;
+}
+
+export interface GetLimitOffsetStringResult {
+    limitOffsetString: string;
+    lastIndex: number;
+    limitOffsetValues: number[];
+}
+
 export type DefaultObject = Record<string, any>;

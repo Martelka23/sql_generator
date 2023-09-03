@@ -83,13 +83,13 @@ class SqlGenerator {
 
 
         if (args.limit) {
-            limitOffsetString += `LIMIT ${args.limit}`;
+            limitOffsetString += `LIMIT $${lastIndex}`;
             lastIndex++;
             limitOffsetValues.push(args.limit);
         }
 
         if (args.offset) {
-            limitOffsetString += ` OFFSET ${args.offset}`;
+            limitOffsetString += ` OFFSET $${lastIndex}`;
             lastIndex++;
             limitOffsetValues.push(args.offset);
         }

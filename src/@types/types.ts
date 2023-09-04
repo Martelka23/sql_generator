@@ -37,6 +37,7 @@ export interface RangeArgs {
     from: number | string;
     to: number | string;
     column: string;
+    toTimestamp?: boolean;
 }
 
 export interface GetRangeStringResult {

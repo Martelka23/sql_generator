@@ -103,17 +103,18 @@ class SqlGenerator {
         let rangeString = '';
         let lastIndex = start;
         let rangeValues: Array<number | string> = [];
+        const tsConv = args.toTimestamp ? 'timestamp ' : '';
 
         if (args.from && args.to) {
-            rangeString = `$${lastIndex} < ${args.column} < $${lastIndex + 1}`;
+            rangeString = `${tsConv}$${lastIndex} < ${args.column} < ${tsConv}$${lastIndex + 1}`;
             lastIndex += 2;
             rangeValues = [args.from, args.to];
         } else if (args.from && !args.to) {
-            rangeString = `$${lastIndex} < ${args.column}`;
+            rangeString = `${tsConv}$${lastIndex} < ${args.column}`;
             lastIndex += 1;
             rangeValues = [args.from];
         } else if (!args.from && args.to) {
-            rangeString = `${args.column} < $${lastIndex}`;
+            rangeString = `${args.column} < ${tsConv}$${lastIndex}`;
             lastIndex += 1;
             rangeValues = [args.to];
         }

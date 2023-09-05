@@ -103,18 +103,19 @@ class SqlGenerator {
         let rangeString = start === 1 ? 'WHERE ' : '';
         let lastIndex = start;
         let rangeValues: Array<number | string> = [];
-        const tsConv = args.toTimestamp ? 'timestamp ' : '';
+        const value1 = args.toTimestamp ? `to_timestamp($${lastIndex})` : `$${lastIndex}`;
+        const value2 = args.toTimestamp ? `to_timestamp($${lastIndex + 1})` : `$${lastIndex + 1}`;
 
         if (args.from && args.to) {
-            rangeString = `${tsConv}$${lastIndex} < ${args.column} < ${tsConv}$${lastIndex + 1}`;
+            rangeString += `${value1} < ${args.column} < ${value2}`;
             lastIndex += 2;
             rangeValues = [args.from, args.to];
         } else if (args.from && !args.to) {
-            rangeString = `${tsConv}$${lastIndex} < ${args.column}`;
+            rangeString += `${value1} < ${args.column}`;
             lastIndex += 1;
             rangeValues = [args.from];
         } else if (!args.from && args.to) {
-            rangeString = `${args.column} < ${tsConv}$${lastIndex}`;
+            rangeString += `${args.column} < ${value1}`;
             lastIndex += 1;
             rangeValues = [args.to];
         } else {

@@ -54,7 +54,7 @@ class SqlGenerator {
     getConditionString(conditionObject: DefaultObject = {}, start: number = 1): GetConditionStringResult {
         let conditionString = '';
         const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start);
-        if (stringObject) {
+        if (stringObject && start === 1) {
             conditionString = 'WHERE ' + stringObject;
         }
 
@@ -100,7 +100,7 @@ class SqlGenerator {
     }
 
     getRangeString(args: RangeArgs, start: number = 1): GetRangeStringResult {
-        let rangeString = '';
+        let rangeString = start === 1 ? 'WHERE ' : '';
         let lastIndex = start;
         let rangeValues: Array<number | string> = [];
         const tsConv = args.toTimestamp ? 'timestamp ' : '';
@@ -117,6 +117,8 @@ class SqlGenerator {
             rangeString = `${args.column} < ${tsConv}$${lastIndex}`;
             lastIndex += 1;
             rangeValues = [args.to];
+        } else {
+            rangeString = '';
         }
 
         return { rangeString, lastIndex, rangeValues };

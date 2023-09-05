@@ -1,6 +1,6 @@
 {
   "name": "ts-sql-generator",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "author": "martelka",
   "license": "MIT",
   "main": "dist/index.js",

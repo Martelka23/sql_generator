@@ -111,8 +111,8 @@ class SqlGenerator {
         let rangeString = start === 1 ? 'WHERE ' : '';
         let lastIndex = start;
         let rangeValues: Array<number | string> = [];
-        const isMs1 = args.toTimestamp && args.from.toString().length === 13;
-        const isMs2 = args.toTimestamp && args.to.toString().length === 13;
+        const isMs1 = args.toTimestamp && args.from?.toString()?.length === 13;
+        const isMs2 = args.toTimestamp && args.to?.toString()?.length === 13;
         const value1 = args.toTimestamp ? `to_timestamp($${lastIndex}${isMs1 ? '::double precision / 1000' : ''})` : `$${lastIndex}`;
         const value2 = args.toTimestamp ? `to_timestamp($${lastIndex + 1}${isMs2 ? '::double precision / 1000' : ''})` : `$${lastIndex + 1}`;
 

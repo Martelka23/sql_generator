@@ -45,7 +45,13 @@ class SqlGenerator {
         const keys = Object.keys(filtredObject);
         const values = Object.values(filtredObject);
 
-        const stringObject = keys.map((key, i) => `${this.camelToSnakeCase(key)} = $${i + start}`).join(joinSubstring);
+        const stringObject = keys.map((key, i) => {
+            if (Array.isArray(filtredObject[key])) {
+                return `${this.camelToSnakeCase(key)} = ANY ($${i + start})`;
+            } else {
+                return `${this.camelToSnakeCase(key)} = $${i + start}`;
+            }
+        }).join(joinSubstring);
         const lastIndex = start + keys.length;
 
         return { stringObject, lastIndex, values };
@@ -63,8 +69,9 @@ class SqlGenerator {
 
     getSetString(object: DefaultObject, start: number = 1): GetSetStringResult {
         const { stringObject, lastIndex, values } = this.objectToString(object, ', ', start);
+        const setValues = values.map((e: any) => typeof e === 'object' ? JSON.stringify(e) : e);
 
-        return { setString: stringObject, lastIndex, setValues: values };
+        return { setString: stringObject, lastIndex, setValues };
     }
 
     getInsertString(object: DefaultObject, start: number = 1): GetInsertStringResult {
@@ -74,8 +81,9 @@ class SqlGenerator {
 
         const insertString = `(${keys.join(', ')}) VALUES (${newValues.join(', ')})`;
         const lastIndex = start + keys.length;
+        const insertValues = values.map((e: any) => typeof e === 'object' ? JSON.stringify(e) : e);
 
-        return { insertString, lastIndex, insertValues: values };
+        return { insertString, lastIndex, insertValues };
     }
 
     getLimitOffsetString(args: LimitOffsetArgs, start: number = 1): GetLimitOffsetStringResult {
@@ -103,11 +111,14 @@ class SqlGenerator {
         let rangeString = start === 1 ? 'WHERE ' : '';
         let lastIndex = start;
         let rangeValues: Array<number | string> = [];
-        const value1 = args.toTimestamp ? `to_timestamp($${lastIndex})` : `$${lastIndex}`;
-        const value2 = args.toTimestamp ? `to_timestamp($${lastIndex + 1})` : `$${lastIndex + 1}`;
+        const isMs1 = args.toTimestamp && args.from.toString().length === 13;
+        const isMs2 = args.toTimestamp && args.to.toString().length === 13;
+        const value1 = args.toTimestamp ? `to_timestamp($${lastIndex}${isMs1 ? '::double precision / 1000' : ''})` : `$${lastIndex}`;
+        const value2 = args.toTimestamp ? `to_timestamp($${lastIndex + 1}${isMs2 ? '::double precision / 1000' : ''})` : `$${lastIndex + 1}`;
 
         if (args.from && args.to) {
-            rangeString += `${value1} < ${args.column} < ${value2}`;
+            rangeString += `${value1} < ${args.column}`;
+            rangeString += ` AND ${args.column} < ${value2}`;
             lastIndex += 2;
             rangeValues = [args.from, args.to];
         } else if (args.from && !args.to) {

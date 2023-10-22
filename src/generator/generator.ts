@@ -37,7 +37,7 @@ class SqlGenerator {
             : camelcaseKeysObj(input);
     }
 
-    objectToString(object: DefaultObject, joinSubstring: string, start: number = 1): ObjectToStringResult {
+    objectToString(object: DefaultObject, joinSubstring: string, start: number = 1, convertArrays: boolean = false): ObjectToStringResult {
         const entries = Object.entries(object);
         const filtredEntries = entries.filter(([key, value]) => value !== null && value !== undefined);
         const filtredObject = Object.fromEntries(filtredEntries);
@@ -46,7 +46,7 @@ class SqlGenerator {
         const values = Object.values(filtredObject);
 
         const stringObject = keys.map((key, i) => {
-            if (Array.isArray(filtredObject[key])) {
+            if (convertArrays && Array.isArray(filtredObject[key])) {
                 return `${this.camelToSnakeCase(key)} = ANY ($${i + start})`;
             } else {
                 return `${this.camelToSnakeCase(key)} = $${i + start}`;
@@ -59,7 +59,7 @@ class SqlGenerator {
 
     getConditionString(conditionObject: DefaultObject = {}, start: number = 1): GetConditionStringResult {
         let conditionString = '';
-        const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start);
+        const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, true);
         if (stringObject && start === 1) {
             conditionString = 'WHERE ' + stringObject;
         }
@@ -74,16 +74,34 @@ class SqlGenerator {
         return { setString: stringObject, lastIndex, setValues };
     }
 
-    getInsertString(object: DefaultObject, start: number = 1): GetInsertStringResult {
-        const values = Object.values(object);
-        const keys = Object.keys(object).map(key => this.camelToSnakeCase(key));
-        const newValues = keys.map((_, i) => `$${i + start}`);
+    getInsertString(object: DefaultObject | DefaultObject[], start: number = 1): GetInsertStringResult {
+        if (Array.isArray(object)) {
+            const keys = Object.keys(object[0]).map(key => this.camelToSnakeCase(key));
+            let insertString = `(${keys.join(', ')}) VALUES`;
+            let lastIndex = start;
+            let insertValues: any[] = [];
 
-        const insertString = `(${keys.join(', ')}) VALUES (${newValues.join(', ')})`;
-        const lastIndex = start + keys.length;
-        const insertValues = values.map((e: any) => typeof e === 'object' ? JSON.stringify(e) : e);
+            const insertRows = object.map(obj => {
+                const newValues = keys.map((_, i) => `$${i + lastIndex}`);
+                lastIndex += keys.length;
+                insertValues = [...insertValues, ...Object.values(obj)];
 
-        return { insertString, lastIndex, insertValues };
+                return `(${newValues.join(', ')})`;
+            });
+            insertString += ` ${insertRows.join(', ')}`;
+
+            return { insertString, lastIndex, insertValues };
+        } else {
+            const values = Object.values(object);
+            const keys = Object.keys(object).map(key => this.camelToSnakeCase(key));
+            const newValues = keys.map((_, i) => `$${i + start}`);
+    
+            const insertString = `(${keys.join(', ')}) VALUES (${newValues.join(', ')})`;
+            const lastIndex = start + keys.length;
+            const insertValues = values.map((e: any) => typeof e === 'object' && e !== null ? JSON.stringify(e) : e);
+    
+            return { insertString, lastIndex, insertValues };
+        }
     }
 
     getLimitOffsetString(args: LimitOffsetArgs, start: number = 1): GetLimitOffsetStringResult {
@@ -135,15 +153,29 @@ class SqlGenerator {
         return { rangeString, lastIndex, rangeValues };
     }
 
-    getOrderByString(columns: string[], order: 'asc' | 'desc' = 'asc'): string {
-        const result = columns.length
-            ? `ORDER BY ${columns.join(', ')} ${order}`
-            : '';
+    getOrderByString(columns: string[] | string, order: 'asc' | 'desc' = 'asc'): string {
+        let result = '';
+
+        if (Array.isArray(columns)) {
+            result = columns.length
+                ? `ORDER BY ${columns.join(', ')} ${order}`
+                : '';
+        } else if (columns) {
+            result = `ORDER BY ${columns} ${order}`;
+        }
 
         return result;
     }
 }
 
 const sqlGenerator = new SqlGenerator();
+
+// const a = {a: 1, b: 2};
+// const b = [{a: 1, b: 2}];
+// const c = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}];
+
+// console.log(sqlGenerator.getInsertString(a));
+// console.log(sqlGenerator.getInsertString(b));
+// console.log(sqlGenerator.getInsertString(c));
 
 export { sqlGenerator };

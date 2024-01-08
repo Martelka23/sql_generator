@@ -47,3 +47,8 @@ export interface GetRangeStringResult {
 }
 
 export type DefaultObject = Record<string, any>;
+
+export interface ObjectToStringArgs {
+    convertArrays?: boolean;
+    allowNull?: boolean;
+}

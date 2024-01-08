@@ -1,14 +1,15 @@
-import { 
-    DefaultObject, 
-    GetConditionStringResult, 
-    GetInsertStringResult, 
-    GetLimitOffsetStringResult, 
-    GetRangeStringResult, 
-    GetSetStringResult, 
-    LimitOffsetArgs, 
+import {
+    DefaultObject,
+    GetConditionStringResult,
+    GetInsertStringResult,
+    GetLimitOffsetStringResult,
+    GetRangeStringResult,
+    GetSetStringResult,
+    LimitOffsetArgs,
+    ObjectToStringArgs,
     ObjectToStringResult,
     RangeArgs
-} from "src/@types/types";
+} from "../@types/types";
 
 class SqlGenerator {
     camelToSnakeCase(str: string): string {
@@ -37,16 +38,21 @@ class SqlGenerator {
             : camelcaseKeysObj(input);
     }
 
-    objectToString(object: DefaultObject, joinSubstring: string, start: number = 1, convertArrays: boolean = false): ObjectToStringResult {
+    objectToString(object: DefaultObject, joinSubstring: string, start: number = 1, args: ObjectToStringArgs): ObjectToStringResult {
+        args = {
+            convertArrays: false,
+            allowNull: false,
+            ...args
+        };
         const entries = Object.entries(object);
-        const filtredEntries = entries.filter(([key, value]) => value !== null && value !== undefined);
+        const filtredEntries = entries.filter(([key, value]) => (args.allowNull || value !== null) && value !== undefined);
         const filtredObject = Object.fromEntries(filtredEntries);
 
         const keys = Object.keys(filtredObject);
         const values = Object.values(filtredObject);
 
         const stringObject = keys.map((key, i) => {
-            if (convertArrays && Array.isArray(filtredObject[key])) {
+            if (args.convertArrays && Array.isArray(filtredObject[key])) {
                 return `${this.camelToSnakeCase(key)} = ANY ($${i + start})`;
             } else {
                 return `${this.camelToSnakeCase(key)} = $${i + start}`;
@@ -59,7 +65,7 @@ class SqlGenerator {
 
     getConditionString(conditionObject: DefaultObject = {}, start: number = 1): GetConditionStringResult {
         let conditionString = '';
-        const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, true);
+        const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, { convertArrays: true });
         if (stringObject && start === 1) {
             conditionString = 'WHERE ' + stringObject;
         }
@@ -68,8 +74,8 @@ class SqlGenerator {
     }
 
     getSetString(object: DefaultObject, start: number = 1): GetSetStringResult {
-        const { stringObject, lastIndex, values } = this.objectToString(object, ', ', start);
-        const setValues = values.map((e: any) => typeof e === 'object' ? JSON.stringify(e) : e);
+        const { stringObject, lastIndex, values } = this.objectToString(object, ', ', start, { allowNull: true });
+        const setValues = values.map((e: any) => typeof e === 'object' && e !== null ? JSON.stringify(e) : e);
 
         return { setString: stringObject, lastIndex, setValues };
     }
@@ -95,11 +101,11 @@ class SqlGenerator {
             const values = Object.values(object);
             const keys = Object.keys(object).map(key => this.camelToSnakeCase(key));
             const newValues = keys.map((_, i) => `$${i + start}`);
-    
+
             const insertString = `(${keys.join(', ')}) VALUES (${newValues.join(', ')})`;
             const lastIndex = start + keys.length;
             const insertValues = values.map((e: any) => typeof e === 'object' && e !== null ? JSON.stringify(e) : e);
-    
+
             return { insertString, lastIndex, insertValues };
         }
     }
@@ -170,12 +176,15 @@ class SqlGenerator {
 
 const sqlGenerator = new SqlGenerator();
 
-// const a = {a: 1, b: 2};
-// const b = [{a: 1, b: 2}];
-// const c = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}];
+// const a = { a: 1, b: 2 };
+// const b = [{ a: 1, b: 2 }];
+// const c = [{ a: 1, b: 2 }, { a: 3, b: 4 }, { a: 5, b: 6 }];
+// const d: any = { a: 1, b: null, c: undefined };
 
 // console.log(sqlGenerator.getInsertString(a));
 // console.log(sqlGenerator.getInsertString(b));
 // console.log(sqlGenerator.getInsertString(c));
+// console.log(sqlGenerator.getInsertString(d));
+// console.log(sqlGenerator.getSetString(d));
 
 export { sqlGenerator };

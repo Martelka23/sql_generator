@@ -11,6 +11,7 @@ import {
     RangeArgs
 } from "../@types/types";
 
+
 class SqlGenerator {
     camelToSnakeCase(str: string): string {
         return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -95,6 +96,7 @@ class SqlGenerator {
                 return `(${newValues.join(', ')})`;
             });
             insertString += ` ${insertRows.join(', ')}`;
+            insertValues = insertValues.map((e: any) => e !== undefined ? e : null);
 
             return { insertString, lastIndex, insertValues };
         } else {
@@ -104,7 +106,9 @@ class SqlGenerator {
 
             const insertString = `(${keys.join(', ')}) VALUES (${newValues.join(', ')})`;
             const lastIndex = start + keys.length;
-            const insertValues = values.map((e: any) => typeof e === 'object' && e !== null ? JSON.stringify(e) : e);
+            const insertValues = values
+                .map((e: any) => e !== undefined ? e : null)
+                .map((e: any) => typeof e === 'object' && e !== null ? JSON.stringify(e) : e);
 
             return { insertString, lastIndex, insertValues };
         }
@@ -176,15 +180,17 @@ class SqlGenerator {
 
 const sqlGenerator = new SqlGenerator();
 
-// const a = { a: 1, b: 2 };
-// const b = [{ a: 1, b: 2 }];
-// const c = [{ a: 1, b: 2 }, { a: 3, b: 4 }, { a: 5, b: 6 }];
-// const d: any = { a: 1, b: null, c: undefined };
+const a = { a: 1, b: 2 };
+const b = [{ a: 1, b: 2 }];
+const c = [{ a: 1, b: 2 }, { a: 3, b: 4 }, { a: 5, b: 6 }];
+const d: any = { a: 1, b: null, c: undefined };
+const e: any = [{ a: 1, b: null, c: undefined }, { a: 1, b: null, c: undefined }];
 
-// console.log(sqlGenerator.getInsertString(a));
-// console.log(sqlGenerator.getInsertString(b));
-// console.log(sqlGenerator.getInsertString(c));
-// console.log(sqlGenerator.getInsertString(d));
-// console.log(sqlGenerator.getSetString(d));
+console.log(sqlGenerator.getInsertString(a));
+console.log(sqlGenerator.getInsertString(b));
+console.log(sqlGenerator.getInsertString(c));
+console.log(sqlGenerator.getInsertString(d));
+console.log(sqlGenerator.getInsertString(e));
+console.log(sqlGenerator.getSetString(d));
 
 export { sqlGenerator };

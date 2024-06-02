@@ -69,6 +69,8 @@ class SqlGenerator {
         const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, { convertArrays: true });
         if (stringObject && start === 1) {
             conditionString = 'WHERE ' + stringObject;
+        } else {
+            conditionString = stringObject;
         }
 
         return { conditionString, lastIndex, conditionValues: values };
@@ -186,11 +188,20 @@ const sqlGenerator = new SqlGenerator();
 // const d: any = { a: 1, b: null, c: undefined };
 // const e: any = [{ a: 1, b: null, c: undefined }, { a: 1, b: null, c: undefined }];
 
+// console.log('Insert:')
 // console.log(sqlGenerator.getInsertString(a));
 // console.log(sqlGenerator.getInsertString(b));
 // console.log(sqlGenerator.getInsertString(c));
 // console.log(sqlGenerator.getInsertString(d));
 // console.log(sqlGenerator.getInsertString(e));
+
+// console.log('Set:')
 // console.log(sqlGenerator.getSetString(d));
+
+// console.log('Conditions:');
+// console.log(sqlGenerator.getConditionString());
+// console.log(sqlGenerator.getConditionString(d));
+// console.log(sqlGenerator.getConditionString(a, 2));
+
 
 export { sqlGenerator };

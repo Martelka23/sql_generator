@@ -29,7 +29,15 @@ class SqlGenerator {
     camelcaseKeys<T extends DefaultObject>(input: any): any {
         const camelcaseKeysObj = (object: DefaultObject): DefaultObject => {
             const result: any = {};
-            Object.keys(object).forEach(key => result[this.snakeToCamelCase(key)] = object[key]);
+            Object.keys(object).forEach(key => {
+                let value = object[key];
+                if (typeof object[key] === 'object' && object[key] !== null) {
+                    value = Array.isArray(object[key])
+                        ? object[key].map((obj: any) => camelcaseKeysObj(obj))
+                        : camelcaseKeysObj(object[key]);
+                }
+                result[this.snakeToCamelCase(key)] = value;
+            });
 
             return result;
         }
@@ -202,6 +210,46 @@ const sqlGenerator = new SqlGenerator();
 // console.log(sqlGenerator.getConditionString());
 // console.log(sqlGenerator.getConditionString(d));
 // console.log(sqlGenerator.getConditionString(a, 2));
+
+// const g: any = [
+//     {
+//         asdf_dsf: 123,
+//         dd_dd: {
+//             wer_wer: 'sfds_sdf',
+//             d_e: 2
+//         },
+//         fd_df: [
+//             {
+//                 wer_wer: 123,
+//                 d_e: 2
+//             },
+//             {
+//                 wer_wer: 123,
+//                 d_e: 2
+//             }
+//         ]
+//     },
+//     {
+//         asdf_dsf: null,
+//         dd_dd: {
+//             wer_wer: {
+//                 sdf_fdf: 1
+//             },
+//             d_e: 2
+//         },
+//         fd_df: [
+//             {
+//                 wer_wer: null,
+//                 d_e: 2
+//             },
+//             {
+//                 wer_wer: 123,
+//                 d_e: 2
+//             }
+//         ]
+//     }
+// ];
+// console.log(JSON.stringify(sqlGenerator.camelcaseKeys(g)));
 
 
 export { sqlGenerator };

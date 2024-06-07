@@ -33,7 +33,11 @@ class SqlGenerator {
                 let value = object[key];
                 if (typeof object[key] === 'object' && object[key] !== null) {
                     value = Array.isArray(object[key])
-                        ? object[key].map((obj: any) => camelcaseKeysObj(obj))
+                        ? object[key].map((obj: any) => {
+                            return typeof obj === 'object' && obj !== null
+                                ? camelcaseKeysObj(obj)
+                                : obj
+                        })
                         : camelcaseKeysObj(object[key]);
                 }
                 result[this.snakeToCamelCase(key)] = value;
@@ -188,7 +192,7 @@ class SqlGenerator {
     }
 }
 
-const sqlGenerator = new SqlGenerator();
+export const sqlGenerator = new SqlGenerator();
 
 // const a = { a: 1, b: 2 };
 // const b = [{ a: 1, b: 2 }];
@@ -220,7 +224,10 @@ const sqlGenerator = new SqlGenerator();
 //         },
 //         fd_df: [
 //             {
-//                 wer_wer: 123,
+//                 wer_wer: [
+//                     1,
+//                     3
+//                 ],
 //                 d_e: 2
 //             },
 //             {
@@ -250,6 +257,3 @@ const sqlGenerator = new SqlGenerator();
 //     }
 // ];
 // console.log(JSON.stringify(sqlGenerator.camelcaseKeys(g)));
-
-
-export { sqlGenerator };

@@ -31,7 +31,7 @@ class SqlGenerator {
             const result: any = {};
             Object.keys(object).forEach(key => {
                 let value = object[key];
-                if (typeof object[key] === 'object' && object[key] !== null) {
+                if (typeof object[key] === 'object' && (Array.isArray(object[key]) || object[key]?.constructor === Object)) {
                     value = Array.isArray(object[key])
                         ? object[key].map((obj: any) => {
                             return typeof obj === 'object' && obj?.constructor === Object
@@ -220,7 +220,7 @@ export const sqlGenerator = new SqlGenerator();
 //         asdf_dsf: 123,
 //         dd_dd: {
 //             wer_wer: 'sfds_sdf',
-//             d_e: 2
+//             d_e: new Date()
 //         },
 //         fd_df: [
 //             {

@@ -34,7 +34,7 @@ class SqlGenerator {
                 if (typeof object[key] === 'object' && object[key] !== null) {
                     value = Array.isArray(object[key])
                         ? object[key].map((obj: any) => {
-                            return typeof obj === 'object' && obj !== null
+                            return typeof obj === 'object' && obj?.constructor === Object
                                 ? camelcaseKeysObj(obj)
                                 : obj
                         })

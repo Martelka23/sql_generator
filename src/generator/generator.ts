@@ -1,5 +1,6 @@
 import {
     DefaultObject,
+    GetConditionStringArgs,
     GetConditionStringResult,
     GetInsertStringResult,
     GetLimitOffsetStringResult,
@@ -76,10 +77,10 @@ class SqlGenerator {
         return { stringObject, lastIndex, values };
     }
 
-    getConditionString(conditionObject: DefaultObject = {}, start: number = 1): GetConditionStringResult {
+    getConditionString(conditionObject: DefaultObject = {}, start: number = 1, args?: GetConditionStringArgs): GetConditionStringResult {
         let conditionString = '';
         const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, { convertArrays: true });
-        if (stringObject && start === 1) {
+        if (stringObject && (start === 1 || args?.withWhere)) {
             conditionString = 'WHERE ' + stringObject;
         } else {
             conditionString = stringObject;

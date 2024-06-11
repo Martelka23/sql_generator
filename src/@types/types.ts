@@ -52,3 +52,7 @@ export interface ObjectToStringArgs {
     convertArrays?: boolean;
     allowNull?: boolean;
 }
+
+export interface GetConditionStringArgs {
+    withWhere?: boolean;
+}

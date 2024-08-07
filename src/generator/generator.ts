@@ -80,7 +80,7 @@ class SqlGenerator {
     getConditionString(conditionObject: DefaultObject = {}, start: number = 1, args?: GetConditionStringArgs): GetConditionStringResult {
         let conditionString = '';
         const { stringObject, lastIndex, values } = this.objectToString(conditionObject, ' AND ', start, { convertArrays: true });
-        if (stringObject && (start === 1 || args?.withWhere)) {
+        if (stringObject && args?.withWhere !== false && (start === 1 || args?.withWhere)) {
             conditionString = 'WHERE ' + stringObject;
         } else {
             conditionString = stringObject;

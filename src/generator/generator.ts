@@ -29,6 +29,11 @@ class SqlGenerator {
     camelcaseKeys<T extends DefaultObject>(input: T[]): T[];
     camelcaseKeys<T extends DefaultObject>(input: any): any {
         const camelcaseKeysObj = (object: DefaultObject): DefaultObject => {
+            try {
+                Object.keys(object);
+            } catch (err) {
+                return {};
+            }
             const result: any = {};
             Object.keys(object).forEach(key => {
                 let value = object[key];
@@ -258,3 +263,7 @@ export const sqlGenerator = new SqlGenerator();
 //     }
 // ];
 // console.log(JSON.stringify(sqlGenerator.camelcaseKeys(g)));
+
+// console.log('keys:')
+// console.log(sqlGenerator.camelcaseKeys(undefined));
+// console.log(sqlGenerator.camelcaseKeys([]));
